@@ -346,8 +346,8 @@ function nodes.mk_jump_prev(type_list)
   return function()
     local root = nodes.get_treesitter_root()
     local pred = nodes.type_equals_any(type_list)
-    local nodes = nodes.dfs_filter(root, pred)
-    local prev_class_node = nodes.node_before_cursor(nodes)
+    local ns = nodes.dfs_filter(root, pred)
+    local prev_class_node = nodes.node_before_cursor(ns)
     nodes.jump_node(prev_class_node)
   end
 end
@@ -356,8 +356,8 @@ function nodes.mk_jump_next(type_list)
   return function()
     local root = nodes.get_treesitter_root()
     local pred = nodes.type_equals_any(type_list)
-    local nodes = nodes.dfs_filter(root, pred)
-    local next_node = nodes.node_after_cursor(nodes)
+    local ns = nodes.dfs_filter(root, pred)
+    local next_node = nodes.node_after_cursor(ns)
     nodes.jump_node(next_node)
   end
 end

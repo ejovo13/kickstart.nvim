@@ -293,7 +293,7 @@ require('lazy').setup({
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {}, event = 'VimEnter' },
   -- Dracula theme
-  { 'Mofiqul/dracula.nvim', event = 'VinEnter' },
+  { 'Mofiqul/dracula.nvim', event = 'VimEnter' },
 
   {
     'nvim-treesitter/playground',
@@ -1086,6 +1086,7 @@ require('lazy').setup({
 --
 require 'user.settings'
 require 'user.utils'
+require 'user.nodes'
 
 require('lspconfig').lua_ls.setup {
   on_init = function(client)
