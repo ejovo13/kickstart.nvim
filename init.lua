@@ -12,7 +12,7 @@
 ========         ||                    ||   |-----|          ========
 ========         ||:Tutor              ||   |:::::|          ========
 ========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
+=======         `"")----------------(""`   ___________      ========
 ========        /::::::::::|  |::::::::::\  \ no mouse \     ========
 ========       /:::========|  |==hjkl==:::\  \ required \    ========
 ========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
@@ -87,11 +87,16 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.g.mapleader = ';'
+vim.g.maplocalleader = ';'
+
+local map = vim.api.nvim_set_keymap
+
+map('i', 'kj', '<ESC>', { noremap = true, silent = false })
+map('v', 'kj', '<ESC>', { noremap = true, silent = false })
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +107,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -153,7 +158,6 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
-
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -166,6 +170,55 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+-------------------------------------------------------------------------------
+-- Ejovo options
+-------------------------------------------------------------------------------
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+
+-------------------------------------------------------------------------------
+-- Ejovo commands
+-------------------------------------------------------------------------------
+local ejovo_prefix = '<leader>a'
+
+local ejovo_map = function(suffix, cmd_sequence, description)
+  vim.keymap.set('n', ejovo_prefix .. suffix, cmd_sequence, { desc = description })
+end
+
+-- jumps --
+ejovo_map('j', function()
+  print 'Alert'
+end, '[Jump]')
+
+-- Ejovo keybinds
+ejovo_map('t', '<cmd>tab split<CR>', 'Open up this window in a new [T]ab')
+ejovo_map('x', '<cmd>write<CR><cmd>source %<CR>', 'Write and source this file')
+ejovo_map('n', '<cmd>tab new<CR>', 'Open a new tab')
+ejovo_map('l', '<cmd>LazyGit<CR>', 'Open a new lazygit tui')
+ejovo_map('r', '<cmd>restart<CR>', 'Restart nvim')
+
+-- Window movements
+ejovo_map('wh', '<C-w><C-h>', 'Move focus to the left window')
+ejovo_map('wl', '<C-w><C-l>', 'Move focus to the right window')
+ejovo_map('wj', '<C-w><C-j>', 'Move focus to the lower window')
+ejovo_map('wk', '<C-w><C-k>', 'Move focus to the upper window')
+
+-- Echo commands
+ejovo_map('eb', '<cmd>echo nvim_get_current_buf()<CR>', 'Get the current buffer number')
+
+-- Misc
+ejovo_map('q', '<cmd>quit<CR>', 'Close the window with :[Q]uit')
+ejovo_map('k', '<cmd>quit<CR>', 'Close the window with :[Q]uit')
+ejovo_map('s', '<cmd>write<CR>', '[S]ave the current buffer')
+ejovo_map('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', 'Open up the init.lua [C]onfig')
+ejovo_map('b', '<cmd>NvimTreeToggle<CR>', 'Toggle NvimTree')
+ejovo_map("'", '<cmd>qa<CR>', 'Quit all')
+
+-- Ejovo terminal commands
+vim.api.nvim_set_keymap('n', ';j', '<cmd>ToggleTerm direction=float<CR>', { desc = 'Open up a terminal' })
+vim.api.nvim_set_keymap('t', ';j', '<C-\\><C-n>:ToggleTerm<CR>', { noremap = true, silent = true })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -216,7 +269,7 @@ vim.opt.rtp:prepend(lazypath)
 -- [[ Configure and install plugins ]]
 --
 --  To check the current status of your plugins, run
---    :Lazy
+
 --
 --  You can press `?` in this menu for help. Use `:q` to close the window
 --
@@ -238,7 +291,94 @@ require('lazy').setup({
   --    require('Comment').setup({})
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim', opts = {}, event = 'VimEnter' },
+  -- Dracula theme
+  { 'Mofiqul/dracula.nvim', event = 'VinEnter' },
+
+  {
+    'nvim-treesitter/playground',
+    config = function()
+      require('nvim-treesitter.configs').setup {
+        playground = {
+          enable = true,
+          disable = {},
+          updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
+          persist_queries = false, -- Whether the query persists across vim sessions
+          keybindings = {
+            toggle_query_editor = 'o',
+            toggle_hl_groups = 'i',
+            toggle_injected_languages = 't',
+            toggle_anonymous_nodes = 'a',
+            toggle_language_display = 'I',
+            focus_language = 'f',
+            unfocus_language = 'F',
+            update = 'R',
+            goto_node = '<cr>',
+            show_help = '?',
+          },
+        },
+      }
+    end,
+    event = 'VimEnter',
+  },
+  -- Toggle term
+  -- amongst your other plugins
+  {
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    config = function()
+      require('toggleterm').setup {
+        on_open = function(term)
+          vim.cmd 'startinsert'
+        end,
+      }
+    end,
+    event = 'VimEnter',
+  },
+
+  -- Picker for tabs
+  {
+    'LukasPietzschmann/telescope-tabs',
+    config = function()
+      require('telescope-tabs').setup {
+        -- Your custom config :^)
+      }
+    end,
+    event = 'VimEnter',
+  },
+
+  -- Add support for sessions
+  --
+  {
+    'rmagatti/auto-session',
+    config = function()
+      require('auto-session').setup {
+        log_level = 'error',
+      }
+    end,
+  },
+
+  -- LazyGit
+  {
+    'kdheepak/lazygit.nvim',
+    cmd = {
+      'LazyGit',
+      'LazyGitConfig',
+      'LazyGitCurrentFile',
+      'LazyGitFilter',
+      'LazyGitFilterCurrentFile',
+    },
+    -- optional for floating window border decoration
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+    },
+    -- setting the keybinding for LazyGit with 'keys' is recommended in
+    -- order to load the plugin when the command is run for the first time
+    keys = {
+      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    },
+    event = 'VimEnter',
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -258,6 +398,7 @@ require('lazy').setup({
     },
   },
 
+  -- Tree sitter
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -272,7 +413,6 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
-
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -295,7 +435,22 @@ require('lazy').setup({
       }, { mode = 'v' })
     end,
   },
-
+  -- Nvim-notify
+  {
+    'rcarriga/nvim-notify',
+    event = 'VimEnter',
+    config = function()
+      require 'notify'
+    end,
+  },
+  -- NvimTree
+  {
+    'nvim-tree/nvim-tree.lua',
+    event = 'VimEnter',
+    config = function()
+      require('nvim-tree').setup()
+    end,
+  },
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -382,6 +537,11 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>sm', builtin.man_pages, { desc = '[S]earch through [M]an pages' })
+      vim.keymap.set('n', '<leader>sT', builtin.treesitter, { desc = "[S]earch through [T]reesitter's tree!" })
+      vim.keymap.set('n', '<leader>st', function()
+        require('telescope-tabs').list_tabs()
+      end, { desc = '[S]earch through [t]abs!' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -486,6 +646,17 @@ require('lazy').setup({
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
           map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
+
+          -- Map a telesope keybind starting with <leader>d
+          local function map_tel_sym(key, symbol, doc_str)
+            map('<leader>d' .. key, function()
+              return require('telescope.builtin').lsp_document_symbols { symbols = symbol }
+            end, doc_str)
+          end
+
+          map_tel_sym('c', 'class', '[D]ocument [C]lasses')
+          map_tel_sym('f', 'function', '[D]ocument [F]unctions')
+          map_tel_sym('m', 'method', '[D]ocument [M]ethods')
 
           -- Fuzzy find all the symbols in your current workspace.
           --  Similar to document symbols, except searches over your entire project.
@@ -779,12 +950,15 @@ require('lazy').setup({
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
+    -- 'Mofiqul/dracula.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
       vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'dracula'
+      -- vim.cmd.colorscheme 'dracula-soft'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -907,6 +1081,45 @@ require('lazy').setup({
     },
   },
 })
+
+-- Ejovo require
+--
+require 'user.settings'
+require 'user.utils'
+
+require('lspconfig').lua_ls.setup {
+  on_init = function(client)
+    local path = client.workspace_folders[1].name
+    if vim.loop.fs_stat(path .. '/.luarc.json') or vim.loop.fs_stat(path .. '/.luarc.jsonc') then
+      return
+    end
+
+    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+      runtime = {
+        -- Tell the language server which version of Lua you're using
+        -- (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+      },
+      -- Make the server aware of Neovim runtime files
+      workspace = {
+        checkThirdParty = false,
+        library = {
+          vim.env.VIMRUNTIME,
+          -- Depending on the usage, you might want to add additional paths here.
+          -- "${3rd}/luv/library"
+          -- "${3rd}/busted/library",
+        },
+        -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+        -- library = vim.api.nvim_get_runtime_file("", true)
+      },
+    })
+  end,
+  settings = {
+    Lua = {},
+  },
+}
+
+-- require('nvim-tree').setup()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
