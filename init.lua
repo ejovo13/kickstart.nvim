@@ -1117,6 +1117,8 @@ require 'user.settings'
 require 'user.utils'
 require 'user.nodes'
 
+-- Ejovo Language Servers
+
 require('lspconfig').lua_ls.setup {
   on_init = function(client)
     local path = client.workspace_folders[1].name
@@ -1146,6 +1148,31 @@ require('lspconfig').lua_ls.setup {
   end,
   settings = {
     Lua = {},
+  },
+}
+
+-- Configure `ruff-lsp`.
+-- See: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#ruff_lsp
+-- For the default config, along with instructions on how to customize the settings
+require('lspconfig').ruff_lsp.setup {
+  init_options = {
+    settings = {
+      -- Any extra CLI arguments for `ruff` go here.
+      args = {},
+    },
+  },
+}
+
+require('lspconfig').pylsp.setup {
+  settings = {
+    pylsp = {
+      plugins = {
+        pycodestyle = {
+          ignore = { 'W391' },
+          maxLineLength = 100,
+        },
+      },
+    },
   },
 }
 
