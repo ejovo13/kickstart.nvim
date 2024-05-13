@@ -198,12 +198,16 @@ ejovo_map('x', '<cmd>write<CR><cmd>source %<CR>', 'Write and source this file')
 ejovo_map('n', '<cmd>tab new<CR>', 'Open a new tab')
 ejovo_map('l', '<cmd>LazyGit<CR>', 'Open a new lazygit tui')
 ejovo_map('r', '<cmd>restart<CR>', 'Restart nvim')
+ejovo_map('v', '<cmd>vsp<CR>', 'Open up a [V]ertical split')
+ejovo_map('h', '<cmd>sp<CR>', 'Open up a [H]orizontal split')
 
 -- Window movements
 ejovo_map('wh', '<C-w><C-h>', 'Move focus to the left window')
 ejovo_map('wl', '<C-w><C-l>', 'Move focus to the right window')
 ejovo_map('wj', '<C-w><C-j>', 'Move focus to the lower window')
 ejovo_map('wk', '<C-w><C-k>', 'Move focus to the upper window')
+ejovo_map(',', 'gT', 'Move tab left')
+ejovo_map('.', 'gt', 'Move tab left')
 
 -- Echo commands
 ejovo_map('eb', '<cmd>echo nvim_get_current_buf()<CR>', 'Get the current buffer number')
@@ -214,6 +218,7 @@ ejovo_map('k', '<cmd>quit<CR>', 'Close the window with :[Q]uit')
 ejovo_map('s', '<cmd>write<CR>', '[S]ave the current buffer')
 ejovo_map('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', 'Open up the init.lua [C]onfig')
 ejovo_map('b', '<cmd>NvimTreeToggle<CR>', 'Toggle NvimTree')
+-- ejovo_map('B', require('nvim-tree').update_focused_file.update_root, 'Update root')
 ejovo_map("'", '<cmd>qa<CR>', 'Quit all')
 
 -- Ejovo terminal commands
@@ -334,6 +339,30 @@ require('lazy').setup({
       }
     end,
     event = 'VimEnter',
+  },
+
+  {
+    'vim-test/vim-test',
+    config = function()
+      vim.cmd "let test#python#runner = 'pytest'"
+    end,
+    event = 'VimEnter',
+  },
+
+  {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    opts = {
+      -- add any options here
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      'MunifTanjim/nui.nvim',
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      'rcarriga/nvim-notify',
+    },
   },
 
   -- Picker for tabs
@@ -1121,6 +1150,7 @@ require('lspconfig').lua_ls.setup {
 }
 
 -- require('nvim-tree').setup()
+-- ejovo_map('B', nvim_tree.update_focused_file.update_root, 'Hello')
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
