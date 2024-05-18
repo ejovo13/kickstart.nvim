@@ -163,6 +163,7 @@ vim.opt.scrolloff = 10
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
+
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
@@ -171,12 +172,75 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagn
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- Ejovo options
 -------------------------------------------------------------------------------
-vim.opt.tabstop = 2
+vim.opt.tabstop = 4
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
+
+-------------------------------------------------------------------------------
+-- Ejovo key functions
+-------------------------------------------------------------------------------
+-- Return a function that creates new commands prefixed with '<leader>$pref'
+local function pref_mapper(pref, mode)
+  mode = mode or 'n'
+  pref = '<leader>' .. pref
+  local mapper = function(suffix, cmd_sequence, desc)
+    vim.keymap.set(mode, pref .. suffix, cmd_sequence, { desc = desc })
+    print 'Just set some keys'
+  end
+  return mapper
+end
+
+local map_kill = pref_mapper 'k'
+local map_force_kill = pref_mapper 'K'
+local map_execute = pref_mapper 'x'
+local map_open = pref_mapper 'o'
+local map_new = pref_mapper 'n'
+local map_leader = pref_mapper ''
+local map_git = pref_mapper 'g'
+
+-- Kill commands
+map_kill('b', '<cmd>bd<CR>', '[k]ill the current [b]uffer')
+map_kill('f', '<cmd>q<CR>', '[k]ill the current [f]ile window')
+map_kill('a', '<cmd>qa<CR>', '[k]ill [a]ll')
+
+-- Force kill commands
+map_force_kill('b', '<cmd>bd!<CR>', '[K]ill the current [b]uffer')
+map_force_kill('w', '<cmd>q!<CR>', '[K]ill the current [w]uffer')
+map_force_kill('a', '<cmd>qa!<CR>', '[K]ill [a]ll')
+
+-- Open commands
+map_open('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', '[O]pen [c]onfig')
+
+-- New commands
+map_new('t', '<cmd>tab new<CR>', '[N]ew [T]ab')
+map_new('v', '<cmd>vnew<CR>', '[N]ew [V]ertical tab')
+map_new('h', '<cmd>new<CR>', '[N]ew [H]orizontal tab')
+
+-- Regular leader commands
+map_leader('w', '<cmd>w<CR>', '[W]rite to buffer')
+-- Toggle the minimap and then jump to the right window!
+map_leader('m', '<cmd>MinimapToggle<CR><leader>awl', '[M]inimap')
+
+-- Git commands
+map_git('s', function()
+  local file_name = vim.fn.expand '%'
+  local job = vim.fn.jobstart('git add ' .. file_name)
+  print('Added ' .. file_name .. 'to staging area')
+end, '[S]tage the current file')
+
+map_git('l', '<cmd>LazyGit<CR>', '[G]it [L]azy')
+
+-- Ctrl backspace ?
+-- Go to insert mode then delete the word then re-enter insert
+vim.keymap.set('i', '<C-BS>', 'kjdbi')
+
+-- Open commands
+
+-- Notification commands
+-- map_notify('d', vim.notify.dismiss, '[D]ismiss notifications')
 
 -------------------------------------------------------------------------------
 -- Ejovo commands
@@ -195,8 +259,6 @@ end, '[Jump]')
 -- Ejovo keybinds
 ejovo_map('t', '<cmd>tab split<CR>', 'Open up this window in a new [T]ab')
 ejovo_map('x', '<cmd>write<CR><cmd>source %<CR>', 'Write and source this file')
-ejovo_map('n', '<cmd>tab new<CR>', 'Open a new tab')
-ejovo_map('l', '<cmd>LazyGit<CR>', 'Open a new lazygit tui')
 ejovo_map('r', '<cmd>restart<CR>', 'Restart nvim')
 ejovo_map('v', '<cmd>vsp<CR>', 'Open up a [V]ertical split')
 ejovo_map('h', '<cmd>sp<CR>', 'Open up a [H]orizontal split')
@@ -213,17 +275,23 @@ ejovo_map('.', 'gt', 'Move tab left')
 ejovo_map('eb', '<cmd>echo nvim_get_current_buf()<CR>', 'Get the current buffer number')
 
 -- Misc
-ejovo_map('q', '<cmd>quit<CR>', 'Close the window with :[Q]uit')
-ejovo_map('k', '<cmd>quit<CR>', 'Close the window with :[Q]uit')
 ejovo_map('s', '<cmd>write<CR>', '[S]ave the current buffer')
-ejovo_map('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', 'Open up the init.lua [C]onfig')
 ejovo_map('b', '<cmd>NvimTreeToggle<CR>', 'Toggle NvimTree')
 -- ejovo_map('B', require('nvim-tree').update_focused_file.update_root, 'Update root')
-ejovo_map("'", '<cmd>qa<CR>', 'Quit all')
 
 -- Ejovo terminal commands
 vim.api.nvim_set_keymap('n', ';j', '<cmd>ToggleTerm direction=float<CR>', { desc = 'Open up a terminal' })
+vim.api.nvim_set_keymap('i', ';j', '<cmd>ToggleTerm direction=float<CR>', { desc = 'Open up a terminal' })
 vim.api.nvim_set_keymap('t', ';j', '<C-\\><C-n>:ToggleTerm<CR>', { noremap = true, silent = true })
+
+-- Arrow direction keys
+vim.keymap.set('t', '<C-p>', '<Up>', { desc = 'Show the [P]revious command in our shells history' })
+vim.keymap.set('t', '<C-n>', '<Down>', { desc = 'Show the [N]ext command in our shells history' })
+vim.keymap.set('t', ';s', 'poetry shell<CR>', { desc = 'Jump into a python virtual environment' })
+vim.keymap.set('t', ';e', 'exit<CR>', { desc = '[E]xit the terminal shell' })
+vim.keymap.set('t', ';g', 'git status<CR>', { desc = '[G]it status' })
+vim.keymap.set('t', ';p', 'pre-commit run<CR>', { desc = '[P]re-commit run' })
+vim.keymap.set('t', ';l', '<C-l>', { desc = '' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -294,12 +362,32 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  --
+  -- { 'ellisonleao/glow.nvim', config = true, cmd = 'Glow', event = 'VimEnter' },
+  -- {
+  --   'davidgranstrom/nvim-markdown-preview',
+  --   config = function()
+  --     require('nvim_markdown_preview').setup {}
+  --   end,
+  --   event = 'VimEnter',
+  -- },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {}, event = 'VimEnter' },
+
+  -- {
+  --   'iamcco/markdown-preview.nvim',
+  --   cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+  --   build = 'cd app && npm install',
+  --   init = function()
+  --     vim.g.mkdp_filetypes = { 'markdown' }
+  --   end,
+  --   ft = { 'markdown' },
+  --   event = 'VimEnter',
+  -- },
+
   -- Dracula theme
   { 'Mofiqul/dracula.nvim', event = 'VimEnter' },
-
   {
     'nvim-treesitter/playground',
     config = function()
@@ -346,6 +434,11 @@ require('lazy').setup({
     config = function()
       vim.cmd "let test#python#runner = 'pytest'"
     end,
+    event = 'VimEnter',
+  },
+
+  {
+    'wfxr/minimap.vim',
     event = 'VimEnter',
   },
 
@@ -403,9 +496,9 @@ require('lazy').setup({
     },
     -- setting the keybinding for LazyGit with 'keys' is recommended in
     -- order to load the plugin when the command is run for the first time
-    keys = {
-      { '<leader>lg', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
-    },
+    -- keys = {
+    --   { '<leader>', '<cmd>LazyGit<cr>', desc = 'LazyGit' },
+    -- },
     event = 'VimEnter',
   },
 
@@ -457,6 +550,11 @@ require('lazy').setup({
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
         ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
         ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
+        ['<leader>k'] = { name = '[K]ill', _ = 'which_key_ignore' },
+        ['<leader>o'] = { name = '[O]pen', _ = 'which_key_ignore' },
+        ['<leader>n'] = { name = '[N]ew', _ = 'which_key_ignore' },
+        ['<leader>x'] = { name = 'e[X]ecute', _ = 'which_key_ignore' },
+        ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
       }
       -- visual mode
       require('which-key').register({
@@ -549,7 +647,6 @@ require('lazy').setup({
           },
         },
       }
-
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
@@ -558,7 +655,9 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', function()
+        builtin.find_files { hidden = true }
+      end, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -573,7 +672,7 @@ require('lazy').setup({
       end, { desc = '[S]earch through [t]abs!' })
 
       -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
+      vim.keymap.set('n', '<leader>l', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
         builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
           winblend = 10,
@@ -864,7 +963,7 @@ require('lazy').setup({
 
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
-    event = 'InsertEnter',
+    event = 'VimEnter',
     dependencies = {
       -- Snippet Engine & its associated nvim-cmp source
       {
@@ -911,6 +1010,7 @@ require('lazy').setup({
           end,
         },
         completion = { completeopt = 'menu,menuone,noinsert' },
+        updateevents = 'TextChanged,TextChangedI',
 
         -- For an understanding of why these mappings were
         -- chosen, you will need to read `:help ins-completion`
@@ -1018,17 +1118,17 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
-
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      -- local statusline = require 'mini.statusline'
+      -- -- set use_icons to true if you have a Nerd Font
+      -- statusline.setup { use_icons = vim.g.have_nerd_font }
+      --
+      -- -- You can configure sections in the statusline by overriding their
+      -- -- default behavior. For example, here we set the section for
+      -- -- cursor location to LINE:COLUMN
+      -- ---@diagnostic disable-next-line: duplicate-set-field
+      -- statusline.section_location = function()
+      --   return '%2l:%-2v'
+      -- end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -1112,10 +1212,11 @@ require('lazy').setup({
 })
 
 -- Ejovo require
---
 require 'user.settings'
 require 'user.utils'
 require 'user.nodes'
+require 'user.snippets.snips'
+require 'user.precommit'
 
 -- Ejovo Language Servers
 
