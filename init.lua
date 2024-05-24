@@ -188,7 +188,6 @@ local function pref_mapper(pref, mode)
   pref = '<leader>' .. pref
   local mapper = function(suffix, cmd_sequence, desc)
     vim.keymap.set(mode, pref .. suffix, cmd_sequence, { desc = desc })
-    print 'Just set some keys'
   end
   return mapper
 end
@@ -292,6 +291,7 @@ vim.keymap.set('t', ';e', 'exit<CR>', { desc = '[E]xit the terminal shell' })
 vim.keymap.set('t', ';g', 'git status<CR>', { desc = '[G]it status' })
 vim.keymap.set('t', ';p', 'pre-commit run<CR>', { desc = '[P]re-commit run' })
 vim.keymap.set('t', ';l', '<C-l>', { desc = '' })
+vim.keymap.set('t', ';u', 'poetry update ', { desc = 'Type `poetry update`' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
