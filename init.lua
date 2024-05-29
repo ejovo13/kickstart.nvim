@@ -176,7 +176,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- Ejovo options
 -------------------------------------------------------------------------------
 vim.opt.tabstop = 4
-vim.opt.shiftwidth = 2
+vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 
 -------------------------------------------------------------------------------
@@ -292,6 +292,7 @@ vim.keymap.set('t', ';g', 'git status<CR>', { desc = '[G]it status' })
 vim.keymap.set('t', ';p', 'pre-commit run<CR>', { desc = '[P]re-commit run' })
 vim.keymap.set('t', ';l', '<C-l>', { desc = '' })
 vim.keymap.set('t', ';u', 'poetry update ', { desc = 'Type `poetry update`' })
+vim.keymap.set('t', ';v', '<cmd>put +<CR>', { desc = '' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -922,6 +923,24 @@ require('lazy').setup({
         },
       }
     end,
+  },
+
+  -- Virtual Environment selection
+  {
+    'linux-cultist/venv-selector.nvim',
+    dependencies = { 'neovim/nvim-lspconfig', 'nvim-telescope/telescope.nvim', 'mfussenegger/nvim-dap-python' },
+    opts = {
+      -- Your options go here
+      -- name = "venv",
+      -- auto_refresh = false
+    },
+    event = 'VeryLazy', -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
+    keys = {
+      -- Keymap to open VenvSelector to pick a venv.
+      { '<leader>vs', '<cmd>VenvSelect<cr>' },
+      -- Keymap to retrieve the venv from a cache (the one previously used for the same project directory).
+      { '<leader>vc', '<cmd>VenvSelectCached<cr>' },
+    },
   },
 
   { -- Autoformat
