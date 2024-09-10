@@ -7,7 +7,7 @@ vim.print 'Hello'
 
 -- Add the current file to git's staging area.
 local function stage_current_file()
-  current_file_name = vim.fn.expand '%'
+  local current_file_name = vim.fn.expand '%'
 
   print("Adding '" .. current_file_name .. "' to the staging area")
 end

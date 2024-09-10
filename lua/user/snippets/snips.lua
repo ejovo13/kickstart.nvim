@@ -1,38 +1,25 @@
 local ls = require 'luasnip'
 
--- This is a snippet creator
--- c(<trigger>, <nodes>)
-local s = ls.s
+ls.config.set_config {
 
--- This is a format node.
--- It takes a format string and a list of nodes
--- fmt(<fmt_string>, {...nodes})
-local fmt = require('luasnip.extras.fmt').fmt
+  history = true,
+  updateevents = 'TextChanged,TextChangedI',
 
--- This is an insert node
--- It takes a position (like $1) and optionally some default text
--- i(<position>, [default_text])
-local i = ls.insert_node
-
--- Repeats a node
--- rep(<position>)
-local rep = require('luasnip.extras').rep
-
-ls.snippets = {
-  lua = {
-    -- Lua specific snippets go here.
-    s('req', fmt("local{} = require('{}')", { i(1, 'default'), rep(1) })),
-  },
-  python = {
-    s('req', fmt("local{} = require('{}')", { i(1, 'default'), rep(1) })),
-  },
+  enable_autosnippets = true,
 }
 
-ls.add_snippets('lua', {
-  -- Lua specific snippets go here.
-  s('req', fmt("local{} = require('{}')", { i(1, 'default'), rep(1) })),
-})
+vim.keymap.set({ 'i', 's' }, '<c-k>', function()
+  if ls.expand_or_jumpable() then
+    ls.expand_or_jump()
+  end
+end, { silent = true })
 
-ls.add_snippets('python', {
-  s('Settings', fmt('class {{}}(BaseSettings):\n    """Pydantic Settings """', {})),
-})
+vim.keymap.set({ 'i', 's' }, '<c-j>', function()
+  if ls.jumpable(-1) then
+    ls.jump(-1)
+  end
+end, { silent = true })
+
+require 'user.snippets.python'
+require 'user.snippets.rust'
+require 'user.snippets.lua'

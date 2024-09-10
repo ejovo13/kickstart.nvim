@@ -2,7 +2,7 @@
 --
 --
 --
-nodes = {}
+local nodes = {}
 local utils = require 'user.utils'
 local ts_utils = require 'nvim-treesitter.ts_utils'
 
@@ -17,7 +17,7 @@ function nodes.check_function(ob, fn_name)
   return utils.contains(metadata, fn_name)
 end
 
--- Compute the height of a tree (or note?)
+-- Compute the height of a tree (or node?)
 function nodes.height_node(node)
   if node:child_count() == 0 then
     return 1
@@ -47,6 +47,9 @@ function nodes._retrieve_lineage(node, lineage)
   end
 end
 
+--- Retrieve all ancestors of a given node
+---@param node Node node whose ancedstry we want to trace
+---@return Node list of nodes where the first node is the parent of @node
 function nodes.retrieve_lineage(node)
   local ancestors = nodes._retrieve_lineage(node, {})
   -- table.insert(ancestors, 0, node)
@@ -389,14 +392,19 @@ local function jump_map(key, type_list, desc)
   local jump_next_fn = nodes.mk_jump_next(type_list)
 
   vim.keymap.set('n', '[' .. key, jump_prev_fn, { desc = 'Get prev ' .. desc })
-  vim.keymap.set('n', ']' .. key, jump_next_fn, { desc = 'Get prev ' .. desc })
+  vim.keymap.set('n', ']' .. key, jump_next_fn, { desc = 'Get next' .. desc })
 end
 
-jump_map('f', { 'function_definition', 'function_declaration' }, '[F]unction')
+jump_map('f', { 'function_definition', 'function_declaration', 'function_item' }, '[F]unction')
 jump_map('c', { 'class_definition' }, '[C]lass')
-jump_map('i', { 'identifier' }, '[I]identifier')
+-- jump_map('i', { 'identifier' }, '[I]identifier')
 jump_map('t', { 'type' }, '[T]ype')
 jump_map('b', { 'block' }, '[B]lock')
+jump_map('i', { 'impl_item' }, '[I]impl')
+jump_map('s', { 'struct_item' }, '[S]truct')
+jump_map('e', { 'enum_item' }, '[E]numerator')
+jump_map('u', { 'use_declaration', 'import_from_statement', 'import_statement' }, '[U]se/import')
+jump_map('n', { 'identifier' }, '[N]ames of identifiers')
 
 utils.alert(utils.current_file_type(), 'Loaded!')
 

@@ -1,7 +1,7 @@
 -- Helpful file manipulations
 --
 --
-files = {}
+local files = {}
 
 -- CONSTANTS
 GITLAB_CI_FILENAME = '.gitlab-ci.yml'

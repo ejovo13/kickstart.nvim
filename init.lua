@@ -117,7 +117,7 @@ vim.opt.showmode = false
 
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
+--  See `:help 'clipboard'
 vim.opt.clipboard = 'unnamedplus'
 
 -- Enable break indent
@@ -199,6 +199,11 @@ local map_open = pref_mapper 'o'
 local map_new = pref_mapper 'n'
 local map_leader = pref_mapper ''
 local map_git = pref_mapper 'g'
+local map_terminal_v = pref_mapper('t', 'v')
+local map_terminal = pref_mapper 't'
+
+-- Execute commands
+map_execute('s', '<cmd>TermExec cmd="python3 %"<CR>')
 
 -- Kill commands
 map_kill('b', '<cmd>bd<CR>', '[k]ill the current [b]uffer')
@@ -213,6 +218,10 @@ map_force_kill('a', '<cmd>qa!<CR>', '[K]ill [a]ll')
 -- Open commands
 map_open('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', '[O]pen [c]onfig')
 
+-- Sending lines to the terminal
+map_terminal('l', '<cmd>ToggleTermSendCurrentLine<CR><cmd>ToggleTerm<CR>', 'Send the current [L]ine to the terminal')
+map_terminal_v('', '<cmd>ToggleTermSendVisualSelection<CR><cmd>ToggleTerm<CR>', 'Send the current [L]ines to the terminal')
+
 -- New commands
 map_new('t', '<cmd>tab new<CR>', '[N]ew [T]ab')
 map_new('v', '<cmd>vnew<CR>', '[N]ew [V]ertical tab')
@@ -222,6 +231,7 @@ map_new('h', '<cmd>new<CR>', '[N]ew [H]orizontal tab')
 map_leader('w', '<cmd>w<CR>', '[W]rite to buffer')
 -- Toggle the minimap and then jump to the right window!
 map_leader('m', '<cmd>MinimapToggle<CR><leader>awl', '[M]inimap')
+map_leader('b', '<cmd>Tagbar<CR>', 'Tag[B]ar toggle')
 
 -- Git commands
 map_git('s', function()
@@ -231,6 +241,7 @@ map_git('s', function()
 end, '[S]tage the current file')
 
 map_git('l', '<cmd>LazyGit<CR>', '[G]it [L]azy')
+map_git('i', '<cmd>edit ./.gitignore<CR>', '[G]it [I]gnore')
 
 -- Ctrl backspace ?
 -- Go to insert mode then delete the word then re-enter insert
@@ -261,6 +272,9 @@ ejovo_map('x', '<cmd>write<CR><cmd>source %<CR>', 'Write and source this file')
 ejovo_map('r', '<cmd>restart<CR>', 'Restart nvim')
 ejovo_map('v', '<cmd>vsp<CR>', 'Open up a [V]ertical split')
 ejovo_map('h', '<cmd>sp<CR>', 'Open up a [H]orizontal split')
+local opts = { noremap = true, silent = true }
+ejovo_map('d', ":lua require('neogen').generate()<CR>", opts)
+ejovo_map('f', '<cmd>TSPlaygroundToggle<CR>')
 
 -- Window movements
 ejovo_map('wh', '<C-w><C-h>', 'Move focus to the left window')
@@ -293,6 +307,11 @@ vim.keymap.set('t', ';p', 'pre-commit run<CR>', { desc = '[P]re-commit run' })
 vim.keymap.set('t', ';l', '<C-l>', { desc = '' })
 vim.keymap.set('t', ';u', 'poetry update ', { desc = 'Type `poetry update`' })
 vim.keymap.set('t', ';v', '<cmd>put +<CR>', { desc = '' })
+vim.keymap.set('t', ';dc', 'docker compose config --services<CR>', { desc = 'Show services in docker compose' })
+vim.keymap.set('t', ';t', 'ttmux <CR>')
+vim.keymap.set('t', ';b', 'poetry version patch && git add pyproject.toml<CR>', { desc = '[B]ump version of project' })
+vim.keymap.set('t', ';k', '<Right>', { desc = '[B]ump version of project' })
+vim.keymap.set('t', ';c', 'git commit -m "', { desc = '[B]ump version of project' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -373,6 +392,7 @@ require('lazy').setup({
   --   event = 'VimEnter',
   -- },
 
+  -- Lazy Package Management
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {}, event = 'VimEnter' },
 
@@ -387,8 +407,13 @@ require('lazy').setup({
   --   event = 'VimEnter',
   -- },
 
+  -- Themes
   -- Dracula theme
   { 'Mofiqul/dracula.nvim', event = 'VimEnter' },
+  { 'navarasu/onedark.nvim', event = 'VimEnter' },
+  { 'Mofiqul/vscode.nvim', event = 'VimEnter' },
+  { 'scottmckendry/cyberdream.nvim', event = 'VimEnter' },
+  { 'tiagovla/tokyodark.nvim', event = 'VimEnter' },
   {
     'nvim-treesitter/playground',
     config = function()
@@ -521,6 +546,17 @@ require('lazy').setup({
     },
   },
 
+  -- Git file history
+  {
+    'nvim-telescope/telescope.nvim',
+    dependencies = {
+      {
+        'isak102/telescope-git-file-history.nvim',
+        dependencies = { 'tpope/vim-fugitive' },
+      },
+    },
+  },
+
   -- Tree sitter
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -585,6 +621,11 @@ require('lazy').setup({
   -- you do for a plugin at the top level, you can do for a dependency.
   --
   -- Use the `dependencies` key to specify the dependencies of a particular plugin
+  --
+  { -- Merge conflicts
+    'rhysd/conflict-marker.vim',
+    event = 'VimEnter',
+  },
 
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
@@ -641,7 +682,11 @@ require('lazy').setup({
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        pickers = {
+          tags = {
+            ctags_file = 'tags', -- Specify the tags file
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -663,11 +708,13 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
       vim.keymap.set('n', '<leader>sm', builtin.man_pages, { desc = '[S]earch through [M]an pages' })
       vim.keymap.set('n', '<leader>sT', builtin.treesitter, { desc = "[S]earch through [T]reesitter's tree!" })
+      vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch through vim [C]ommands' })
+      vim.keymap.set('n', '<leader>sr', builtin.registers, { desc = '[S]earch [R]egisters' })
+      vim.keymap.set('n', '<leader>so', builtin.tags, { desc = '[S]earch [O]bject tags' })
       vim.keymap.set('n', '<leader>st', function()
         require('telescope-tabs').list_tabs()
       end, { desc = '[S]earch through [t]abs!' })
@@ -694,6 +741,9 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sn', function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+
+      -- Shortcut for searching through git history
+      vim.keymap.set('n', '<leader>gh', require('telescope').extensions.git_file_history.git_file_history, { desc = '[G]it file [H]istory' })
     end,
   },
 
@@ -889,6 +939,18 @@ require('lazy').setup({
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+              --
+              workspace = {
+                -- Make the server aware of Neovim runtime files
+                library = vim.api.nvim_get_runtime_file('', true),
+              },
+              diagnostics = {
+                -- Get the language server to recognize the `vim` global
+                globals = {
+                  'vim',
+                  'require',
+                },
+              },
             },
           },
         },
@@ -933,6 +995,7 @@ require('lazy').setup({
       -- Your options go here
       -- name = "venv",
       -- auto_refresh = false
+      name = '.venv',
     },
     event = 'VeryLazy', -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
     keys = {
@@ -980,6 +1043,15 @@ require('lazy').setup({
     },
   },
 
+  {
+    'danymat/neogen',
+    config = true,
+    -- Uncomment next line if you want to follow only stable versions
+    version = '*',
+  },
+
+  -- Tagbar
+  { 'preservim/tagbar', event = 'VimEnter' },
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
     event = 'VimEnter',
@@ -1098,13 +1170,16 @@ require('lazy').setup({
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
+    -- 'artanikin/vim-synthwave84',
     -- 'Mofiqul/dracula.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyodark'
+      vim.cmd.colorscheme 'cyberdream'
       -- vim.cmd.colorscheme 'dracula'
       -- vim.cmd.colorscheme 'dracula-soft'
 
@@ -1238,6 +1313,19 @@ require 'user.snippets.snips'
 require 'user.precommit'
 
 -- Ejovo Language Servers
+--
+--
+require('neogen').setup {
+  enabled = true,
+  languages = {
+    python = {
+      template = {
+        annotation_convention = 'numpydoc',
+      },
+    },
+    ...,
+  },
+}
 
 require('lspconfig').lua_ls.setup {
   on_init = function(client)
@@ -1257,6 +1345,7 @@ require('lspconfig').lua_ls.setup {
         checkThirdParty = false,
         library = {
           vim.env.VIMRUNTIME,
+          [vim.fn.expand '$VIMRUNTIME/lua'] = true,
           -- Depending on the usage, you might want to add additional paths here.
           -- "${3rd}/luv/library"
           -- "${3rd}/busted/library",
@@ -1266,9 +1355,7 @@ require('lspconfig').lua_ls.setup {
       },
     })
   end,
-  settings = {
-    Lua = {},
-  },
+  settings = {},
 }
 
 -- Configure `ruff-lsp`.
@@ -1295,6 +1382,59 @@ require('lspconfig').pylsp.setup {
     },
   },
 }
+
+require('lspconfig').lua_ls.setup {
+  settings = {
+    Lua = {
+      runtime = {
+        -- Tell the language server which version of Lua you're using
+        -- (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+      },
+      diagnostics = {
+        -- Get the language server to recognize the `vim` global
+        globals = {
+          'vim',
+          'require',
+        },
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file('', true),
+      },
+      -- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
+}
+
+-- git file history config
+require('telescope').load_extension 'git_file_history'
+
+local e = require 'user.ejovo'
+local u = require 'user.utils'
+require 'user.other'
+require 'user.tmux'
+require 'user.vision'
+
+if e.server.is_running() then
+  local response = e.server.register()
+  u.alert('Registration', response)
+else
+  u.alert('Vim-mgr', 'Not running!')
+end
+
+local augroup = vim.api.nvim_create_augroup('ExitGroup', { clear = true })
+vim.api.nvim_create_autocmd('VimLeave', {
+  group = augroup,
+  pattern = '*',
+  callback = function()
+    e.server.disconnect()
+    return 0
+  end,
+})
 
 -- require('nvim-tree').setup()
 -- ejovo_map('B', nvim_tree.update_focused_file.update_root, 'Hello')

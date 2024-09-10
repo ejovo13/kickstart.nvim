@@ -1,19 +1,12 @@
 -- Add a command to 'execute' files.
 --
 --
-exe = {}
+local exe = {}
 
 LIST_NAME = 'things'
 
 exe[LIST_NAME] = {}
 
--- I also want to, in general, have a system where I can store aliases and execute them
---
---
---
---
---
---
 -- Return a list of things that i've been storing
 function exe.list_things()
   return exe[LIST_NAME]
