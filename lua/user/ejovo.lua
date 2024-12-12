@@ -114,6 +114,10 @@ ejovo.file.comment_string = function(bufnr)
   return vim.api.nvim_buf_get_option(bufnr, 'commentstring')
 end
 
+ejovo.file.basename = function()
+  return vim.fn.expand("%:t")
+end
+
 ejovo.file.info = function(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   return {
@@ -167,6 +171,22 @@ ejovo.utils.drop = function(t, n)
   end
   return out
 end
+
+-- ejovo.utils.map_keys = function(t, fn)
+--   local out = {}
+--
+--   if ejovo.utils.is_array(t) then
+--     for index, _ in ipairs(t) do
+--       table.insert(out, index, fn(index))
+--     end
+--   else
+--     for key, _ in pairs(t) do
+--       out[key] = fn(key)
+--     end
+--   end
+--
+--   return out
+-- end
 
 --- Apply a function for all values in a tables key, value pairs
 ---@param t
@@ -587,6 +607,22 @@ ejovo.utils.last = function(t)
     end
   end
 end
+
+
+ejovo.join = function(delim, lst)
+  out = ''
+  for i, value in ipairs(lst) do
+    if i > 1 then
+    out = out .. delim .. tostring(value)
+        else
+    out = value
+        end
+  end
+  return out
+end
+
+
+
 
 -- to execute the function
 

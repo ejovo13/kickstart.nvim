@@ -23,3 +23,5 @@ end, { silent = true })
 require 'user.snippets.python'
 require 'user.snippets.rust'
 require 'user.snippets.lua'
+require 'user.snippets.cmake'
+-- require 'user.snippets.nix'
