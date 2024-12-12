@@ -10,7 +10,7 @@ shell.dirExists = function(filename)
     return out == 'true'
 end
 
-shell.fileExists = function(filename) 
+shell.fileExists = function(filename)
     local cmds = { "bash", "./fileExists.sh", filename }
     local out = vim.fn.system(cmds)
     return out == 'true'
@@ -24,13 +24,13 @@ vim.print(shell.dirExists('./src'))
 vim.print(shell.dirExists('./build'))
 vim.print(shell.dirExists('./false'))
 
-shell.fileExistsScript = function(filename) 
+shell.fileExistsScript = function(filename)
 return {
     vim.fn.printf('test -f ' .. '%s && echo -n "true" || echo -n "false"', filename)
 }
 end
 
-shell.dirExistsScript = function(dirname) 
+shell.dirExistsScript = function(dirname)
 return {
     vim.fn.printf('test -f ' .. '%s && echo -n "true" || echo -n "false"', dirname)
 }
@@ -49,17 +49,18 @@ return {
 end
 
 shell.execute_bash = function(lines)
-    command = ejovo.join('; ', lines)
+    local command = ejovo.join('; ', lines)
     local file = io.popen(command)
     local result = file:read("*all")
     file:close()
-    return result 
+    return result
 end
 
 shell.grep = function(filename, pattern)
-    local out = shell.execute_bash(shell.grepScript(filename, pattern))
+    return shell.execute_bash(shell.grepScript(filename, pattern))
 end
 
+-- Test if a file has any lines containing @pattern
 shell.grepMatch = function(filename, pattern)
     local out = shell.execute_bash(shell.grepMatchScript(filename, pattern))
     return out == 'true'
@@ -89,13 +90,12 @@ shell.parent_dir = function(child)
     if child then
         return shell.execute_bash(shell.getParentDirScript(child))
     else
-        return shell.execute_bash(parentDirScript)
+        return shell.execute_bash(shell.parentDirScript)
     end
 end
 
 shell.current_dir = function()
     return shell.execute_bash({"echo -n $PWD"})
 end
-
 
 return shell

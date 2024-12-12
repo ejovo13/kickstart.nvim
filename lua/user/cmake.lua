@@ -6,27 +6,27 @@ local shell = require('user.shell')
 -- Check if the current diretory has a CMakeCache.txt file
 cmake.isBuildDir = function(dir)
     dir = dir or './'
-    return file_exists(dir .. 'CMakeCache.txt')
+    return shell.file_exists(dir .. 'CMakeCache.txt')
 end
 
 -- Check if the current directory has a CMakeLists.txt file
 cmake.isCMakeDir = function(dir)
     dir = dir or './'
-    return file_exists(dir .. 'CMakeLists.txt')
+    return shell.file_exists(dir .. 'CMakeLists.txt')
 end
 
 -- Check if this file contains the cmake 'project()' keyword
 cmake.isProject = function(dir)
     dir = dir or './'
-    filename = dir .. 'CMakeLists.txt'
-    return 'not_defined'
+    local filename = dir .. 'CMakeLists.txt'
+    shell.grepMatch(filename, '^project(*)')
 end
 
 -- Figure out where the CMake project directory is
 cmake.findProjectDir = function(working_dir)
-    working_dir = working_dir or shell.cwd()
+    working_dir = working_dir or shell.current_dir()
     if cmake.isBuildDir(working_dir) then
-        return grep(working_dir .. '/CMakeCache.txt', 'CMAKE_HOME_DIR')
+        return shell.grep(working_dir .. '/CMakeCache.txt', 'CMAKE_HOME_DIR')
     else
         if cmake.isProject(working_dir) then
             return working_dir
@@ -37,7 +37,7 @@ cmake.findProjectDir = function(working_dir)
 end
 
 cmake.buildPath = function(working_dir)
-    dir = working_dir or cmake.findProjectDir()
+    local dir = working_dir or cmake.findProjectDir()
     return dir .. '/build'
 end
 
@@ -46,5 +46,16 @@ cmake.compileCommandsPath = function(dir)
     dir = dir or cmake.findProjectDir()
     return dir .. '/build/compile_commands.json'
 end
+
+
+-- Call the cmake shell commands to build cmake 
+cmake.build = function()
+end
+
+
+
+
+
+
 
 return cmake

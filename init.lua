@@ -477,7 +477,12 @@ require('lazy').setup({
     event = 'VeryLazy',
     opts = {
       -- add any options here
-      messages = { vies = "mini", view_warn = "mini" },
+      -- messages = { vies = "mini", view_warn = "mini" },
+      messages = {
+        view = "notify",
+        view_error = "popup",
+        view_history = "messages",
+      }
     },
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
@@ -933,33 +938,33 @@ require('lazy').setup({
         -- tsserver = {},
         --
 
-        lua_ls = {
-          -- cmd = {...},
-          cmd = { 'lua-language-server' },
-          -- filetypes = { ...},
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
-              },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
-              --
-              workspace = {
-                -- Make the server aware of Neovim runtime files
-                library = vim.api.nvim_get_runtime_file('', true),
-              },
-              diagnostics = {
-                -- Get the language server to recognize the `vim` global
-                globals = {
-                  'vim',
-                  'require',
-                },
-              },
-            },
-          },
-        },
+        -- lua_ls = {
+        --   -- cmd = {...},
+        --   cmd = { 'lua-language-server' },
+        --   -- filetypes = { ...},
+        --   -- capabilities = {},
+        --   settings = {
+        --     Lua = {
+        --       completion = {
+        --         callSnippet = 'Replace',
+        --       },
+        --       -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+        --       -- diagnostics = { disable = { 'missing-fields' } },
+        --       --
+        --       workspace = {
+        --         -- Make the server aware of Neovim runtime files
+        --         library = vim.api.nvim_get_runtime_file('', true),
+        --       },
+        --       diagnostics = {
+        --         -- Get the language server to recognize the `vim` global
+        --         globals = {
+        --           'vim',
+        --           'require',
+        --         },
+        --       },
+        --     },
+        --   },
+        -- },
       }
 
       -- Ensure the servers and tools above are installed
