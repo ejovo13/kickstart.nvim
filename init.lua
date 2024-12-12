@@ -172,6 +172,7 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagn
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
+
 ------------------------------------------------------------------------------
 -- Ejovo options
 -------------------------------------------------------------------------------
@@ -202,6 +203,8 @@ local map_git = pref_mapper 'g'
 local map_terminal_v = pref_mapper('t', 'v')
 local map_terminal = pref_mapper 't'
 
+vim.keymap.set('n', ';r', '<C>-^', { desc = "Test" })
+
 -- Execute commands
 map_execute('s', '<cmd>TermExec cmd="python3 %"<CR>')
 
@@ -217,6 +220,7 @@ map_force_kill('a', '<cmd>qa!<CR>', '[K]ill [a]ll')
 
 -- Open commands
 map_open('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', '[O]pen [c]onfig')
+map_open('h', function() vim.ui.open(vim.fn.expand('%')) end, '[O]pen [H]tml')
 
 -- Sending lines to the terminal
 map_terminal('l', '<cmd>ToggleTermSendCurrentLine<CR><cmd>ToggleTerm<CR>', 'Send the current [L]ine to the terminal')
@@ -273,7 +277,7 @@ ejovo_map('r', '<cmd>restart<CR>', 'Restart nvim')
 ejovo_map('v', '<cmd>vsp<CR>', 'Open up a [V]ertical split')
 ejovo_map('h', '<cmd>sp<CR>', 'Open up a [H]orizontal split')
 local opts = { noremap = true, silent = true }
-ejovo_map('d', ":lua require('neogen').generate()<CR>", opts)
+ejovo_map('d', ":lua require('neogen').generate()<CR>", "Generate something using neogen")
 ejovo_map('f', '<cmd>TSPlaygroundToggle<CR>')
 
 -- Window movements
@@ -473,6 +477,7 @@ require('lazy').setup({
     event = 'VeryLazy',
     opts = {
       -- add any options here
+      messages = { vies = "mini", view_warn = "mini" },
     },
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
@@ -480,7 +485,7 @@ require('lazy').setup({
       -- OPTIONAL:
       --   `nvim-notify` is only needed, if you want to use the notification view.
       --   If not available, we use `mini` as the fallback
-      'rcarriga/nvim-notify',
+      -- 'rcarriga/nvim-notify',
     },
   },
 
@@ -930,6 +935,7 @@ require('lazy').setup({
 
         lua_ls = {
           -- cmd = {...},
+          cmd = { 'lua-language-server' },
           -- filetypes = { ...},
           -- capabilities = {},
           settings = {
@@ -970,7 +976,7 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      -- require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
         handlers = {
@@ -1327,36 +1333,36 @@ require('neogen').setup {
   },
 }
 
-require('lspconfig').lua_ls.setup {
-  on_init = function(client)
-    local path = client.workspace_folders[1].name
-    if vim.loop.fs_stat(path .. '/.luarc.json') or vim.loop.fs_stat(path .. '/.luarc.jsonc') then
-      return
-    end
-
-    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
-      runtime = {
-        -- Tell the language server which version of Lua you're using
-        -- (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT',
-      },
-      -- Make the server aware of Neovim runtime files
-      workspace = {
-        checkThirdParty = false,
-        library = {
-          vim.env.VIMRUNTIME,
-          [vim.fn.expand '$VIMRUNTIME/lua'] = true,
-          -- Depending on the usage, you might want to add additional paths here.
-          -- "${3rd}/luv/library"
-          -- "${3rd}/busted/library",
-        },
-        -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
-        -- library = vim.api.nvim_get_runtime_file("", true)
-      },
-    })
-  end,
-  settings = {},
-}
+-- require('lspconfig').lua_ls.setup {
+--   on_init = function(client)
+--     local path = client.workspace_folders[1].name
+--     if vim.loop.fs_stat(path .. '/.luarc.json') or vim.loop.fs_stat(path .. '/.luarc.jsonc') then
+--       return
+--     end
+--
+--     client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+--       runtime = {
+--         -- Tell the language server which version of Lua you're using
+--         -- (most likely LuaJIT in the case of Neovim)
+--         version = 'LuaJIT',
+--       },
+--       -- Make the server aware of Neovim runtime files
+--       workspace = {
+--         checkThirdParty = false,
+--         library = {
+--           vim.env.VIMRUNTIME,
+--           [vim.fn.expand '$VIMRUNTIME/lua'] = true,
+--           -- Depending on the usage, you might want to add additional paths here.
+--           -- "${3rd}/luv/library"
+--           -- "${3rd}/busted/library",
+--         },
+--         -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+--         -- library = vim.api.nvim_get_runtime_file("", true)
+--       },
+--     })
+--   end,
+--   settings = {},
+-- }
 
 -- Configure `ruff-lsp`.
 -- See: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#ruff_lsp
@@ -1383,7 +1389,18 @@ require('lspconfig').pylsp.setup {
   },
 }
 
+-- Typst lsp configuration
+require('lspconfig').typst_lsp.setup {
+    -- cmd = { "/home/ejovo/.cargo/bin/typst-lsp" },
+    cmd = { "typst-lsp" },
+    filetypes = { "typst" },
+    settings = {},
+}
+
+
 require('lspconfig').lua_ls.setup {
+
+    cmd = { "lua-language-server" },
   settings = {
     Lua = {
       runtime = {
@@ -1413,6 +1430,8 @@ require('lspconfig').lua_ls.setup {
 -- git file history config
 require('telescope').load_extension 'git_file_history'
 
+vim.keymap.set('n', ';ac', require('notify').dismiss, { desc = "[c]lear notifications" })
+
 local e = require 'user.ejovo'
 local u = require 'user.utils'
 require 'user.other'
@@ -1441,3 +1460,45 @@ vim.api.nvim_create_autocmd('VimLeave', {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+--
+--
+--
+
+require("lspconfig").nixd.setup({
+  cmd = { "nixd" },
+  settings = {
+    nixd = {
+      nixpkgs = {
+        expr = "import <nixpkgs> { }",
+    },
+    formatting = {
+      command = { "alejandra" },
+    },
+    },
+  },
+})
+
+require("lspconfig").clangd.setup({
+  cmd = { "clangd" }, -- Ensure 'clangd' is in your PATH
+  filetypes = { "c", "cpp", "objc", "objcpp" },
+  settings = {
+    clangd = {
+      fallbackFlags = { "-std=c++17", "-I./inc" }, -- Set default flags if no compile_commands.json
+    },
+  },
+})
+
+
+require("lspconfig").cmake.setup({
+  cmd = { "cmake-language-server" },
+  filetypes = { "cmake", "cmakecache" },
+})
+
+
+
+
+vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
+  pattern = "*.typ",
+  command = "setfiletype typst",
+})
