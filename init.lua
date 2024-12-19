@@ -183,6 +183,7 @@ vim.opt.expandtab = true
 -------------------------------------------------------------------------------
 -- Ejovo key functions
 -------------------------------------------------------------------------------
+--
 -- Return a function that creates new commands prefixed with '<leader>$pref'
 local function pref_mapper(pref, mode)
   mode = mode or 'n'
@@ -193,6 +194,7 @@ local function pref_mapper(pref, mode)
   return mapper
 end
 
+
 local map_kill = pref_mapper 'k'
 local map_force_kill = pref_mapper 'K'
 local map_execute = pref_mapper 'x'
@@ -202,6 +204,9 @@ local map_leader = pref_mapper ''
 local map_git = pref_mapper 'g'
 local map_terminal_v = pref_mapper('t', 'v')
 local map_terminal = pref_mapper 't'
+local map_cmake = pref_mapper 'p'
+
+
 
 vim.keymap.set('n', ';r', '<C>-^', { desc = "Test" })
 
@@ -240,7 +245,7 @@ map_leader('b', '<cmd>Tagbar<CR>', 'Tag[B]ar toggle')
 -- Git commands
 map_git('s', function()
   local file_name = vim.fn.expand '%'
-  local job = vim.fn.jobstart('git add ' .. file_name)
+  vim.fn.jobstart('git add ' .. file_name)
   print('Added ' .. file_name .. 'to staging area')
 end, '[S]tage the current file')
 
@@ -1322,6 +1327,7 @@ require 'user.utils'
 require 'user.nodes'
 require 'user.snippets.snips'
 require 'user.precommit'
+require 'user.ui'
 
 -- Ejovo Language Servers
 --
@@ -1381,18 +1387,18 @@ require('lspconfig').ruff_lsp.setup {
   },
 }
 
-require('lspconfig').pylsp.setup {
-  settings = {
-    pylsp = {
-      plugins = {
-        pycodestyle = {
-          ignore = { 'W391' },
-          maxLineLength = 100,
-        },
-      },
-    },
-  },
-}
+-- require('lspconfig').pylsp.setup {
+--   settings = {
+--     pylsp = {
+--       plugins = {
+--         pycodestyle = {
+--           ignore = { 'W391' },
+--           maxLineLength = 100,
+--         },
+--       },
+--     },
+--   },
+-- }
 
 -- Typst lsp configuration
 require('lspconfig').typst_lsp.setup {
@@ -1507,3 +1513,11 @@ vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
   pattern = "*.typ",
   command = "setfiletype typst",
 })
+
+
+-- Fragmented commands
+local cmake = require('user.cmake')
+map_cmake('b', cmake.build, '[B]uild CMake project')
+map_cmake('c', cmake.configure, '[C]onfigure CMake project')
+map_cmake('o', cmake.openProjectFile, '[O]pen CMakeLists.txt')
+-- map_cmake('i', cmake.install, '[I]nstall CMake project')

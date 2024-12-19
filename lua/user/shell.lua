@@ -17,12 +17,12 @@ shell.fileExists = function(filename)
 end
 
 -- Test if a file exists
-vim.print(shell.fileExists('CMakeLists.txt'))
-vim.print(shell.fileExists('./flake.nix'))
-vim.print(shell.fileExists('./false.nix'))
-vim.print(shell.dirExists('./src'))
-vim.print(shell.dirExists('./build'))
-vim.print(shell.dirExists('./false'))
+-- vim.print(shell.fileExists('CMakeLists.txt'))
+-- vim.print(shell.fileExists('./flake.nix'))
+-- vim.print(shell.fileExists('./false.nix'))
+-- vim.print(shell.dirExists('./src'))
+-- vim.print(shell.dirExists('./build'))
+-- vim.print(shell.dirExists('./false'))
 
 shell.fileExistsScript = function(filename)
 return {
@@ -48,12 +48,19 @@ return {
 }
 end
 
+-- Execute a bash script using an input array of lines
 shell.execute_bash = function(lines)
     local command = ejovo.join('; ', lines)
     local file = io.popen(command)
     local result = file:read("*all")
     file:close()
     return result
+end
+
+shell.execute_bash_from = function(lines, dir)
+    dir = dir or './'
+    table.insert(lines, 1, 'cd ' .. dir)
+    return shell.execute_bash(lines)
 end
 
 shell.grep = function(filename, pattern)
@@ -97,5 +104,10 @@ end
 shell.current_dir = function()
     return shell.execute_bash({"echo -n $PWD"})
 end
+
+
+-- "Test" suite
+-- local out = shell.execute_bash_from({'pwd'}, '/home/ejovo/nixos-config/')
+-- vim.print("Out dir: " .. out)
 
 return shell

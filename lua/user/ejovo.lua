@@ -610,7 +610,7 @@ end
 
 
 ejovo.join = function(delim, lst)
-  out = ''
+  local out = ''
   for i, value in ipairs(lst) do
     if i > 1 then
     out = out .. delim .. tostring(value)
@@ -621,8 +621,20 @@ ejovo.join = function(delim, lst)
   return out
 end
 
-
-
+-- Custom error message
+ejovo.error = function(error_name, lines)
+  error_name = error_name or 'GenericError'
+  local hdr0 = "=========================="
+  local hdr = vim.fn.printf("<Error.%s>", error_name)
+  -- Insert header "after" error header
+  table.insert(lines, 1, hdr0)
+  table.insert(lines, 1, hdr)
+  table.insert(lines, 1, hdr0)
+  local lines_prefixed = ejovo.utils.map_values(lines, function(l) return "    " .. l end)
+  table.insert(lines_prefixed, 1, '')
+  local message = ejovo.join('\n', lines_prefixed)
+  return error(message)
+end
 
 -- to execute the function
 

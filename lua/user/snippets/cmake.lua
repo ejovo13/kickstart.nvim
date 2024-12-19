@@ -37,7 +37,7 @@ ls.add_snippets('cmake', {
 
       add_executable({target_name} {target_name_rep}.{file_format})
 
-      install({target_name_rep})
+      install(TARGETS {target_name_rep} DESTINATION bin)
     ]], {
       version = i(1, '3.11'),
       project_name = i(2, 'NewProject'),
@@ -45,6 +45,10 @@ ls.add_snippets('cmake', {
       target_name_rep = rep(3),
       file_format = i(4, 'cpp'),
     })),
+
+
+  s('msg-status', fmt('message(STATUS "{msg}")', { msg = i(1, 'STATUS_MSG') })),
+
   -- s('flake', fmt("{}", { t(test_flake) })),
   -- s('fromFile', ),
 })
@@ -59,6 +63,7 @@ ls.add_snippets('cpp', {
   })),
   s('tmpl-class', fmt("template<typename {}> {}", { i(1, 'T'), i(2) })),
   s('tmpl-fn', fmt("template<typename {}> {}", { i(1, 'T'), i(2) })),
+  s('inc', fmt("#include <{module}>\n{}", { module = i(1, 'iostream'), i(2) })),
 })
 
 vim.print("Added some snippets!")
