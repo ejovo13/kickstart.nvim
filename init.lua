@@ -1466,6 +1466,14 @@ vim.api.nvim_create_autocmd('VimLeave', {
   end,
 })
 
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = '*.typ',
+  callback = function()
+    vim.opt.filetype = 'typst'
+    print 'Typst filetype set for .typ file'
+  end,
+})
+
 -- require('nvim-tree').setup()
 -- ejovo_map('B', nvim_tree.update_focused_file.update_root, 'Hello')
 
