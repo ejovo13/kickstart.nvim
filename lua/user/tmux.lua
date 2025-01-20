@@ -241,13 +241,6 @@ tmux.list_sessions = function()
   return keys(sessions)
 end
 
-tmux.list_windows = function()
-  local sessions = tmux.get_sessions_tree()
-  for index, value in ipairs(sessions) do
-    vim.print()
-  end
-end
-
 vim.keymap.set('n', ';tl', tmux.focus_last_window, { desc = '[t]mux [l]ast window' })
 vim.keymap.set('n', ';tL', tmux.delete_last_window, { desc = '[t]mux delete [L]ast window' })
 -- vim.keymap.set('n', ';tp', tmux.get_sessions_tree, { desc = '[t]mux delete [p]rint [p]anes' })

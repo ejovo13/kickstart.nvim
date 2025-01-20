@@ -52,9 +52,22 @@ end
 -- Create a tree from a given buffer.
 --
 function utils.get_tree(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
   local parser = vim.treesitter.get_parser(bufnr)
   local tree = parser:parse { 0, -1 }
   return tree[1]
+end
+
+-- Retrieve the existsing parsed tree if it exists
+function utils.get_parsed_tree(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  local parser = vim.treesitter.get_parser(bufnr)
+  local tree = parser:trees()[1] -- Access the existing parsed tree
+  if tree == nil then
+    return utils.get_tree(bufnr)
+  else
+    return tree
+  end
 end
 
 -- Get function declarations in a given tree
@@ -208,16 +221,55 @@ function utils.get_nearest_function_to_cursor(tree, bufnr)
   return nearest_fn_name
 end
 
--- Retrieve a node with any type and thing after
-function utils.get_nodes(tree, lhs, tag)
-  local query = '(' .. lhs .. ') @' .. tag
-  vim.print(query)
+--- Run a treesitter query in a buffer.
+---
+---@param query string An S-expr. See [docs] for more
+--
+--  [docs]: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html for more.
+---@return table<TSNode> nodes A table of treesitter nodes matching a given query
+function utils.run_query(query, bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+
   local n_lines = vim.fn.line '$'
-  local bufnr = vim.api.nvim_get_current_buf()
+  local filetype = vim.api.nvim_buf_get_option(bufnr, 'filetype')
+
+  -- Get treesitter root node
+  local tree = utils.get_tree(bufnr)
   local root = tree:root()
 
+  -- Implementation
   local nodes = {}
+  local q = vim.treesitter.query.parse(filetype, query)
+
+  for _, match, _ in q:iter_matches(root, bufnr, 0, n_lines, { all = true }) do
+    for _, node in pairs(match) do
+      table.insert(nodes, node)
+    end
+  end
+
+  return nodes
+end
+
+--- Retrieve all Treesitter nodes matching a given query
+---@param tree TSTree The initial tree sitter tree
+---@param lhs string The lefthand side of an SExpr to be used in our query.
+--- See: https://tree-sitter.github.io/tree-sitter/using-parsers/queries/2-operators.html for more
+---@param tag string? An optional string used to tag our node
+---@param bufnr integer? The identifier of a buffer used to create our TSTree
+---@return table nodes A list of nodes
+function utils.get_nodes(tree, lhs, tag, bufnr)
+  -- Defaults
+  tag = tag or 'tag'
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+  -- Parameters
+  local query = '(' .. lhs .. ') @' .. tag
+  local n_lines = vim.fn.line '$'
+  local root = tree:root()
   local filetype = vim.api.nvim_buf_get_option(bufnr, 'filetype')
+
+  -- Implementation
+  local nodes = {}
   local q = vim.treesitter.query.parse(filetype, query)
 
   for _, match, _ in q:iter_matches(root, bufnr, 0, n_lines, { all = true }) do
