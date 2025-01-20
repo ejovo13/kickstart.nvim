@@ -172,13 +172,13 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagn
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
-
 ------------------------------------------------------------------------------
 -- Ejovo options
 -------------------------------------------------------------------------------
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
+vim.o.softtabstop = 4
 
 -------------------------------------------------------------------------------
 -- Ejovo key functions
@@ -194,7 +194,6 @@ local function pref_mapper(pref, mode)
   return mapper
 end
 
-
 local map_kill = pref_mapper 'k'
 local map_force_kill = pref_mapper 'K'
 local map_execute = pref_mapper 'x'
@@ -206,9 +205,7 @@ local map_terminal_v = pref_mapper('t', 'v')
 local map_terminal = pref_mapper 't'
 local map_cmake = pref_mapper 'p'
 
-
-
-vim.keymap.set('n', ';r', '<C>-^', { desc = "Test" })
+vim.keymap.set('n', ';r', '<C>-^', { desc = 'Test' })
 
 -- Execute commands
 map_execute('s', '<cmd>TermExec cmd="python3 %"<CR>')
@@ -225,11 +222,13 @@ map_force_kill('a', '<cmd>qa!<CR>', '[K]ill [a]ll')
 
 -- Open commands
 map_open('c', '<cmd>tabf $XDG_CONFIG_HOME/nvim/init.lua<CR>', '[O]pen [c]onfig')
-map_open('h', function() vim.ui.open(vim.fn.expand('%')) end, '[O]pen [H]tml')
+map_open('h', function()
+  vim.ui.open(vim.fn.expand '%')
+end, '[O]pen [H]tml')
 
 -- Sending lines to the terminal
 map_terminal('l', '<cmd>ToggleTermSendCurrentLine<CR><cmd>ToggleTerm<CR>', 'Send the current [L]ine to the terminal')
-map_terminal_v('', '<cmd>ToggleTermSendVisualSelection<CR><cmd>ToggleTerm<CR>', 'Send the current [L]ines to the terminal')
+-- map_terminal_v('', '<cmd>ToggleTermSendVisualSelection<CR>', 'Send the current [L]ines to the terminal')
 
 -- New commands
 map_new('t', '<cmd>tab new<CR>', '[N]ew [T]ab')
@@ -282,7 +281,7 @@ ejovo_map('r', '<cmd>restart<CR>', 'Restart nvim')
 ejovo_map('v', '<cmd>vsp<CR>', 'Open up a [V]ertical split')
 ejovo_map('h', '<cmd>sp<CR>', 'Open up a [H]orizontal split')
 local opts = { noremap = true, silent = true }
-ejovo_map('d', ":lua require('neogen').generate()<CR>", "Generate something using neogen")
+ejovo_map('d', ":lua require('neogen').generate()<CR>", 'Generate something using neogen')
 ejovo_map('f', '<cmd>TSPlaygroundToggle<CR>')
 
 -- Window movements
@@ -299,6 +298,12 @@ ejovo_map('eb', '<cmd>echo nvim_get_current_buf()<CR>', 'Get the current buffer 
 -- Misc
 ejovo_map('s', '<cmd>write<CR>', '[S]ave the current buffer')
 ejovo_map('b', '<cmd>NvimTreeToggle<CR>', 'Toggle NvimTree')
+ejovo_map('y', function()
+  local file_name = vim.fn.expand '%' -- Get the current file name (without the path)
+  vim.fn.setreg('+', file_name) -- Copy file name to the specified register
+  vim.notify('Copied file ' .. file_name .. ' to system register')
+end, '[Y]ank name of the current file')
+
 -- ejovo_map('B', require('nvim-tree').update_focused_file.update_root, 'Update root')
 
 -- Ejovo terminal commands
@@ -478,16 +483,24 @@ require('lazy').setup({
   },
 
   {
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
+    opts = {},
+  },
+
+  { 'IndianBoy42/tree-sitter-just', even = 'VimEnter' },
+  {
     'folke/noice.nvim',
     event = 'VeryLazy',
     opts = {
       -- add any options here
       -- messages = { vies = "mini", view_warn = "mini" },
       messages = {
-        view = "notify",
-        view_error = "popup",
-        view_history = "messages",
-      }
+        view = 'notify',
+        view_error = 'notify',
+        -- view_error = 'popup',
+        view_history = 'messages',
+      },
     },
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
@@ -622,12 +635,61 @@ require('lazy').setup({
       require 'notify'
     end,
   },
+  {
+    'nvim-tree/nvim-web-devicons',
+    event = 'VimEnter',
+    config = function()
+      require('nvim-web-devicons').setup {
+        enabled = vim.g.have_nerd_font,
+        strict = true,
+        override_by_extension = {
+          ['nix'] = {
+            icon = '󱄅',
+            name = 'Nix',
+            color = '#5BD2E5',
+          },
+          ['rs'] = {
+            icon = '',
+            name = 'Rust',
+            color = '#E53D1D',
+          },
+          -- Bash Automatic Testing Framework
+          ['bats'] = {
+            icon = '󰭟',
+            name = 'Bats',
+            color = '#FFFFFF',
+          },
+          ['ipynb'] = {
+            icon = '',
+            name = 'Jupyter',
+            color = '#F37821',
+          },
+          ['jq'] = {
+            icon = '󰟥',
+            name = 'jq',
+            color = '#DEE2E6',
+          },
+        },
+      }
+    end,
+  },
   -- NvimTree
   {
     'nvim-tree/nvim-tree.lua',
     event = 'VimEnter',
     config = function()
-      require('nvim-tree').setup()
+      require('nvim-tree').setup {
+        renderer = {
+          icons = {
+            glyphs = {
+              folder = {
+                arrow_closed = '',
+                -- arrow_closed = '',
+              },
+            },
+          },
+        },
+      }
     end,
   },
   -- NOTE: Plugins can specify dependencies.
@@ -664,7 +726,6 @@ require('lazy').setup({
       { 'nvim-telescope/telescope-ui-select.nvim' },
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -1022,6 +1083,10 @@ require('lazy').setup({
     },
   },
 
+  {
+    'nvim-lua/plenary.nvim',
+    event = 'VimEnter',
+  },
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
@@ -1244,6 +1309,13 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  {
+    'windwp/nvim-autopairs',
+    event = 'VimEnter',
+    config = true,
+    -- use opts = {} for passing setup options
+    -- this is equivalent to setup({}) function
+  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -1402,16 +1474,21 @@ require('lspconfig').ruff_lsp.setup {
 
 -- Typst lsp configuration
 require('lspconfig').typst_lsp.setup {
-    -- cmd = { "/home/ejovo/.cargo/bin/typst-lsp" },
-    cmd = { "typst-lsp" },
-    filetypes = { "typst" },
-    settings = {},
+  -- cmd = { "/home/ejovo/.cargo/bin/typst-lsp" },
+  cmd = { 'typst-lsp' },
+  filetypes = { 'typst' },
+  settings = {},
 }
 
+require('lspconfig').fortls.setup {
+  cmd = { 'fortls' },
+  filetype = { 'fortran ' },
+  settings = {},
+}
 
 require('lspconfig').lua_ls.setup {
 
-    cmd = { "lua-language-server" },
+  cmd = { 'lua-language-server' },
   settings = {
     Lua = {
       runtime = {
@@ -1424,6 +1501,14 @@ require('lspconfig').lua_ls.setup {
         globals = {
           'vim',
           'require',
+        },
+      },
+      format = {
+        enable = true,
+        defaultConfig = {
+          indent_style = 'space',
+          indent_size = '4',
+          continuation_indent_size = '4',
         },
       },
       workspace = {
@@ -1441,7 +1526,7 @@ require('lspconfig').lua_ls.setup {
 -- git file history config
 require('telescope').load_extension 'git_file_history'
 
-vim.keymap.set('n', ';ac', require('notify').dismiss, { desc = "[c]lear notifications" })
+vim.keymap.set('n', ';ac', require('notify').dismiss, { desc = '[c]lear notifications' })
 
 local e = require 'user.ejovo'
 local u = require 'user.utils'
@@ -1484,48 +1569,67 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
 --
 --
 
-require("lspconfig").nixd.setup({
-  cmd = { "nixd" },
+require('lspconfig').nixd.setup {
+  cmd = { 'nixd' },
   settings = {
     nixd = {
       nixpkgs = {
-        expr = "import <nixpkgs> { }",
-    },
-    formatting = {
-      command = { "alejandra" },
-    },
+        expr = 'import <nixpkgs> { }',
+      },
+      formatting = {
+        command = { 'alejandra' },
+      },
     },
   },
-})
+}
 
-require("lspconfig").clangd.setup({
-  cmd = { "clangd" }, -- Ensure 'clangd' is in your PATH
-  filetypes = { "c", "cpp", "objc", "objcpp" },
+require('lspconfig').clangd.setup {
+  cmd = { 'clangd', '--query-driver=/usr/bin/g++' }, -- Ensure 'clangd' is in your PATH
+  filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
   settings = {
     clangd = {
-      fallbackFlags = { "-std=c++17", "-I./inc" }, -- Set default flags if no compile_commands.json
+      fallbackFlags = { '-std=c++17', '-I./inc' }, -- Set default flags if no compile_commands.json
     },
   },
+}
+
+require('lspconfig').cmake.setup {
+  cmd = { 'cmake-language-server' },
+  filetypes = { 'cmake', 'cmakecache' },
+}
+
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = '*.typ',
+  command = 'setfiletype typst',
 })
 
-
-require("lspconfig").cmake.setup({
-  cmd = { "cmake-language-server" },
-  filetypes = { "cmake", "cmakecache" },
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = '*.bats',
+  command = 'setfiletype bash',
 })
 
+require('lspconfig').bashls.setup {
+  filetypes = { 'bash' },
+}
 
+local trim_spaces = true
+map_terminal_v('', function()
+  require('toggleterm').send_lines_to_terminal('visual_lines', false, { args = vim.v.count })
+  vim.cmd 'ToggleTerm'
+end, 'Send the current [L]ines to the terminal')
 
-
-vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
-  pattern = "*.typ",
-  command = "setfiletype typst",
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = '*.jq', -- Replace with the filetype name
+  callback = function()
+    vim.bo.commentstring = '# %s' -- Adjust the comment format as needed
+  end,
 })
-
 
 -- Fragmented commands
-local cmake = require('user.cmake')
+local cmake = require 'user.cmake'
 map_cmake('b', cmake.build, '[B]uild CMake project')
 map_cmake('c', cmake.configure, '[C]onfigure CMake project')
 map_cmake('o', cmake.openProjectFile, '[O]pen CMakeLists.txt')
 -- map_cmake('i', cmake.install, '[I]nstall CMake project')
+--
+--
